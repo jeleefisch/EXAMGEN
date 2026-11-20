@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Question Banks - ExamGen{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">Question Banks</h1>
+    <a class="btn btn-primary" href="{% url 'banks:bank_create' %}">New Bank</a>
+</div>
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead><tr><th>Name</th><th>Topics</th><th>Questions</th><th></th></tr></thead>
+            <tbody>
+            {% for bank in banks %}
+            <tr>
+                <td><strong>{{ bank.name }}</strong><div class="small text-muted">{{ bank.description|truncatewords:12 }}</div></td>
+                <td>{{ bank.topic_count }}</td>
+                <td>{{ bank.question_count }}</td>
+                <td class="text-end">
+                    <a class="btn btn-sm btn-outline-secondary" href="{% url 'banks:bank_edit' bank.pk %}">Edit</a>
+                    <a class="btn btn-sm btn-outline-primary" href="{% url 'banks:topic_create' bank.pk %}">Add Topic</a>
+                    <a class="btn btn-sm btn-primary" href="{% url 'banks:question_create' bank.pk %}">Add Question</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" class="text-center text-muted py-4">No question banks yet.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

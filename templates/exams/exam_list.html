@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 class="h3 mb-3">Exams</h1>
+
+<div class="card mb-4"><div class="card-body">
+  <h2 class="h6">Create an exam from a question bank</h2>
+  {% for b in banks %}
+    <a class="btn btn-primary btn-sm me-1 mb-1" href="{% url 'exams:create' b.pk %}">New exam from "{{ b.name }}"</a>
+  {% empty %}
+    <p class="text-muted mb-0">Create a question bank first.</p>
+  {% endfor %}
+</div></div>
+
+{% if exams %}
+<div class="list-group">
+  {% for e in exams %}
+  <a class="list-group-item list-group-item-action" href="{% url 'exams:detail' e.pk %}">
+    <strong>{{ e.title }}</strong>
+    <span class="text-muted">· {{ e.subject }} · {{ e.num_versions }} version(s) · {{ e.get_status_display }}</span>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<p class="text-muted">No exams yet.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 class="h3 mb-1">{{ title }}</h1>
+<p class="text-muted">Bank: <strong>{{ bank.name }}</strong></p>
+
+<div class="card mb-3"><div class="card-body">
+  <h2 class="h6">Usable questions in this bank</h2>
+  <div class="table-responsive">
+  <table class="table table-sm mb-2">
+    <thead><tr><th>Topic</th><th>Easy</th><th>Moderate</th><th>Difficult</th><th>Total</th></tr></thead>
+    <tbody>
+    {% for name, e, m, d, t in form.pool_rows %}
+      <tr><td>{{ name }}</td><td>{{ e }}</td><td>{{ m }}</td><td>{{ d }}</td><td>{{ t }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% if form.excluded %}
+    <div class="small text-warning">{{ form.excluded|length }} question(s) are excluded because they are invalid (inactive or malformed).</div>
+  {% endif %}
+</div></div>
+
+{% if form.non_field_errors %}
+<div class="alert alert-danger">
+  <strong>This configuration is not possible:</strong>
+  <ul class="mb-0">{% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}</ul>
+</div>
+{% endif %}
+
+<form method="post" novalidate>
+  {% csrf_token %}
+  {% for field in form.main_fields %}
+  <div class="mb-3">
+    {% if field.field.widget.input_type == "checkbox" %}
+      <div class="form-check">{{ field }}
+        <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label></div>
+    {% else %}
+      <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}
+    {% endif %}
+    {% for e in field.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+  </div>
+  {% endfor %}
+
+  <h2 class="h6 mt-4">Questions per topic</h2>
+  {% for field in form.topic_fields %}
+  <div class="mb-3">
+    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}
+    {% for e in field.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+  </div>
+  {% endfor %}
+
+  <button class="btn btn-primary" type="submit">Save exam</button>
+  <a class="btn btn-link" href="{% url 'exams:list' %}">Cancel</a>
+</form>
+{% endblock %}

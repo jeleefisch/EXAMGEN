@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - ExamGen{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-1">Dashboard</h1>
+        <p class="text-muted mb-0">Faculty overview</p>
+    </div>
+</div>
+<div class="row g-3">
+    <div class="col-sm-6 col-xl-4">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="text-muted">Question Banks</div>
+                <div class="fs-2 fw-bold">{{ bank_count }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-4">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="text-muted">Questions</div>
+                <div class="fs-2 fw-bold">{{ question_count }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-4">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="text-muted">Active Questions</div>
+                <div class="fs-2 fw-bold">{{ active_question_count }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

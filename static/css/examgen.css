@@ -1,0 +1,43 @@
+body {
+    background: #f4f6f9;
+}
+.examgen-sidebar {
+    position: fixed;
+    top: 56px;
+    bottom: 0;
+    left: 0;
+    background: #fff;
+    border-right: 1px solid #dee2e6;
+    padding-top: 1rem;
+}
+.examgen-sidebar .nav-link {
+    color: #495057;
+    border-radius: .375rem;
+    margin: .125rem .5rem;
+}
+.examgen-sidebar .nav-link:hover {
+    background: #e9f2ff;
+    color: #0d6efd;
+}
+.examgen-main {
+    margin-left: 16.66666667%;
+    padding: 5.25rem 2rem 2rem;
+    min-height: 100vh;
+}
+.auth-main {
+    margin-left: 0;
+}
+.stat-card {
+    border: 0;
+    box-shadow: 0 .125rem .375rem rgba(33, 37, 41, .08);
+}
+@media (max-width: 767.98px) {
+    .examgen-sidebar {
+        position: static;
+        padding-bottom: .5rem;
+    }
+    .examgen-main {
+        margin-left: 0;
+        padding: 5rem 1rem 1.5rem;
+    }
+}
