@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Questions - ExamGen{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Questions</h1>
+</div>
+<form class="card card-body mb-3" method="get">
+    <div class="row g-2">
+        <div class="col-md-3">
+            <select class="form-control" name="bank">
+                <option value="">All banks</option>
+                {% for bank in banks %}<option value="{{ bank.pk }}" {% if request.GET.bank == bank.pk|stringformat:"s" %}selected{% endif %}>{{ bank.name }}</option>{% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select class="form-control" name="difficulty">
+                <option value="">All difficulties</option>
+                {% for value,label in difficulty_choices %}<option value="{{ value }}" {% if request.GET.difficulty == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select class="form-control" name="qtype">
+                <option value="">All types</option>
+                {% for value,label in type_choices %}<option value="{{ value }}" {% if request.GET.qtype == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select class="form-control" name="active">
+                <option value="">All statuses</option>
+                <option value="1" {% if request.GET.active == "1" %}selected{% endif %}>Active</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <button class="btn btn-primary" type="submit">Filter</button>
+            <a class="btn btn-outline-secondary" href="{% url 'banks:question_list' %}">Clear</a>
+        </div>
+    </div>
+</form>
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead><tr><th>Question</th><th>Bank</th><th>Topic</th><th>Type</th><th>Difficulty</th><th>Points</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+            {% for question in questions %}
+            <tr>
+                <td>{{ question.text|truncatewords:12 }}</td>
+                <td>{{ question.bank.name }}</td>
+                <td>{{ question.topic.name }}</td>
+                <td>{{ question.get_qtype_display }}</td>
+                <td>{{ question.difficulty }}</td>
+                <td>{{ question.points }}</td>
+                <td>{% if question.is_active %}<span class="badge text-bg-success">Active</span>{% else %}<span class="badge text-bg-secondary">Inactive</span>{% endif %}</td>
+                <td><a class="btn btn-sm btn-outline-primary" href="{% url 'banks:question_edit' question.pk %}">Edit</a></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="8" class="text-center text-muted py-4">No questions match the filters.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

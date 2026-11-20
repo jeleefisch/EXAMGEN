@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}{% if object %}Edit{% else %}Create{% endif %} Question - ExamGen{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="card">
+            <div class="card-body">
+                <h1 class="h4 mb-3">{% if object %}Edit{% else %}Create{% endif %} Question - {{ bank.name }}</h1>
+                {% if form.errors or formset.errors or formset.non_form_errors %}
+                <div class="alert alert-danger">
+                    {{ form.non_field_errors }}
+                    {{ formset.non_form_errors }}
+                </div>
+                {% endif %}
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    {{ formset.management_form }}
+                    <h2 class="h5 mt-4">Choices</h2>
+                    {% for choice_form in formset %}
+                    <div class="border rounded p-3 mb-2">
+                        {{ choice_form.id }}
+                        {% if choice_form.instance.pk %}<strong>Choice {{ choice_form.instance.position }}</strong>{% else %}<strong>Choice {{ forloop.counter }}</strong>{% endif %}
+                        {{ choice_form.text.label_tag }}
+                        {{ choice_form.text }}
+                        {{ choice_form.text.errors }}
+                        <div class="form-check mt-2">
+                            {{ choice_form.is_correct }}
+                            {{ choice_form.is_correct.label_tag }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                    <button class="btn btn-primary" type="submit">Save Question</button>
+                    <a class="btn btn-outline-secondary" href="{% url 'banks:question_list' %}">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
