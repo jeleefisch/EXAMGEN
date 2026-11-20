@@ -42,3 +42,22 @@ Measured, not proven optimal. Reduced overlap from about 12% to about 0 for 3 ve
 
 ## D-009 Generation is all-or-nothing
 `generate_exam_versions` computes everything first, then writes inside one `transaction.atomic()`. Any failure rolls back, so an exam never ends up with half its versions.
+
+# ExamGen progress (2026-11-20)
+
+## Completed (tested on my machine)
+- `core/` engine: combinatorics, similarity, feasibility (max-flow), shuffle, selection, generator, verifier
+- Auth, dashboard, question banks, topics, questions (MC/TF) with ownership checks
+- Exam and snapshot models (RESTRICT on Question.topic)
+- Generation service `apps/exams/services.py` (atomic, verified, snapshot-based)
+- Test suite: 83 passing
+
+## Implemented, unverified (not yet run)
+- Exam form with feasibility rejection, list/detail/edit/generate/finalize/version views, templates
+- `apps/exams/test_views.py` (10 tests; expect 93 total)
+
+## Planned
+- Phase 2 gaps: delete UI, text search, profile page, get_or_create for Profile
+- Phase 4: ReportLab PDFs (exam, key, answer sheet with QR + markers)
+- Phase 4.5: OMR feasibility spike (check OpenCV/NumPy on Python 3.14)
+- Phases 5-8: OMR, grading and review, reports/metrics, deployment

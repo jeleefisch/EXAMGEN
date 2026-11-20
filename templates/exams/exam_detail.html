@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-3">
+  <div>
+    <h1 class="h3 mb-1">{{ exam.title }}</h1>
+    <div class="text-muted">{{ exam.subject }} · Bank:
+      {% if exam.bank %}{{ exam.bank.name }}{% else %}<em>deleted</em>{% endif %} ·
+      <span class="badge bg-{% if finalized %}success{% else %}secondary{% endif %}">{{ exam.get_status_display }}</span>
+    </div>
+  </div>
+  <a href="{% url 'exams:list' %}" class="btn btn-outline-secondary btn-sm">All exams</a>
+</div>
+
+{% if flash %}
+  {% if flash.notice %}<div class="alert alert-{% if flash.ok %}success{% else %}warning{% endif %}">{{ flash.notice }}</div>{% endif %}
+  {% if flash.problems %}
+  <div class="alert alert-danger"><strong>Could not generate:</strong>
+    <ul class="mb-0">{% for p in flash.problems %}<li>{{ p }}</li>{% endfor %}</ul></div>
+  {% endif %}
+  {% if flash.warnings %}
+  <div class="alert alert-warning"><strong>Warnings:</strong>
+    <ul class="mb-0">{% for w in flash.warnings %}<li>{{ w }}</li>{% endfor %}</ul></div>
+  {% endif %}
+  {% if flash.excluded %}
+  <div class="alert alert-info"><strong>{{ flash.excluded|length }} bank question(s) were skipped as invalid:</strong>
+    <ul class="mb-0">{% for x in flash.excluded %}<li>Question #{{ x.pk }}: {{ x.reason }}</li>{% endfor %}</ul></div>
+  {% endif %}
+{% endif %}
+
+{% if stale %}
+<div class="alert alert-warning">Settings were changed after the last generation. Regenerate before finalizing.</div>
+{% endif %}
+
+<div class="card mb-3"><div class="card-body">
+  <h2 class="h6">Settings</h2>
+  <ul class="mb-2">
+    <li>{{ exam.total_questions }} questions · {{ exam.num_versions }} version(s) · {{ exam.num_students }} students · {{ exam.points_per_question }} point(s) each</li>
+    <li>Difficulty: Easy {{ difficulty.Easy }}, Moderate {{ difficulty.Moderate }}, Difficult {{ difficulty.Difficult }}</li>
+    <li>Topics: {% for r in requirements %}{{ r.topic_name }} {{ r.count }}{% if not forloop.last %}, {% endif %}{% endfor %}</li>
+    <li>Shuffle choices: {{ exam.shuffle_choices|yesno }} · Shuffle questions: {{ exam.shuffle_questions|yesno }}
+        {% if exam.max_similarity is not None %}· Max overlap {{ exam.max_similarity }}{% endif %}</li>
+  </ul>
+  {% if not finalized %}<a class="btn btn-outline-primary btn-sm" href="{% url 'exams:edit' exam.pk %}">Edit settings</a>{% endif %}
+</div></div>
+
+{% if not finalized %}
+<div class="d-flex gap-2 mb-4">
+  <form method="post" action="{% url 'exams:generate' exam.pk %}"
+        {% if versions %}onsubmit="return confirm('Replace the existing versions?')"{% endif %}>
+    {% csrf_token %}
+    <button class="btn btn-primary" type="submit">{% if versions %}Regenerate versions{% else %}Generate versions{% endif %}</button>
+  </form>
+  {% if can_finalize %}
+  <form method="post" action="{% url 'exams:finalize' exam.pk %}"
+        onsubmit="return confirm('Finalizing locks the exam and its answer keys permanently. Continue?')">
+    {% csrf_token %}
+    <button class="btn btn-success" type="submit">Finalize exam</button>
+  </form>
+  {% endif %}
+</div>
+{% endif %}
+
+<h2 class="h5">Versions</h2>
+{% if versions %}
+<div class="list-group mb-4">
+  {% for v in versions %}
+  <div class="list-group-item d-flex justify-content-between">
+    <strong>{{ v.code }}</strong>
+    <span>
+      <a href="{% url 'exams:version' v.pk %}">Paper</a> ·
+      <a href="{% url 'exams:version' v.pk %}?key=1">With answer key</a>
+    </span>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<p class="text-muted">No versions yet.</p>
+{% endif %}
+
+{% if run %}
+<h2 class="h5">Last generation</h2>
+<ul>
+  <li>{{ run.succeeded }} of {{ run.requested }} version(s) generated in {{ run.duration_ms }} ms</li>
+  <li>Possible distinct question selections (estimate): {{ run.selection_estimate }}</li>
+  {% if mean_pct is not None %}<li>Overlap (Jaccard): mean {{ mean_pct }}%, max {{ max_pct }}%</li>{% endif %}
+</ul>
+{% if run.warnings %}
+<div class="alert alert-warning"><ul class="mb-0">{% for w in run.warnings %}<li>{{ w }}</li>{% endfor %}</ul></div>
+{% endif %}
+{% if overlap_rows %}
+<div class="table-responsive">
+<table class="table table-sm">
+  <thead><tr><th>Pair</th><th>Shared questions</th><th>Union</th><th>Overlap</th></tr></thead>
+  <tbody>
+  {% for o in overlap_rows %}
+    <tr><td>{{ o.a }} vs {{ o.b }}</td><td>{{ o.shared }}</td><td>{{ o.union }}</td><td>{{ o.pct }}%</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endif %}
+{% endif %}
+{% endblock %}

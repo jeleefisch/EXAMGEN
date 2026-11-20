@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-3">
+  <div>
+    <h1 class="h3 mb-1">{{ exam.title }} · Version {{ version.code }}</h1>
+    <div class="text-muted">{{ items|length }} questions</div>
+  </div>
+  <div>
+    {% if show_key %}<a class="btn btn-outline-secondary btn-sm" href="{% url 'exams:version' version.pk %}">Hide key</a>
+    {% else %}<a class="btn btn-outline-secondary btn-sm" href="{% url 'exams:version' version.pk %}?key=1">Show key</a>{% endif %}
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'exams:detail' exam.pk %}">Back</a>
+  </div>
+</div>
+
+<p class="small text-muted">
+  Topics: {% for name, n in topic_dist %}{{ name }} {{ n }}{% if not forloop.last %}, {% endif %}{% endfor %} ·
+  Difficulty: {% for name, n in difficulty_dist %}{{ name }} {{ n }}{% if not forloop.last %}, {% endif %}{% endfor %}
+</p>
+
+{% for item in items %}
+<div class="mb-3">
+  <div><strong>{{ forloop.counter }}.</strong> {{ item.text }}</div>
+  <ul class="list-unstyled ms-3 mb-0">
+  {% for c in item.choices.all %}
+    <li{% if show_key and c.is_correct %} class="fw-bold text-success"{% endif %}>{{ c.display_label }}. {{ c.text }}{% if show_key and c.is_correct %} ✓{% endif %}</li>
+  {% endfor %}
+  </ul>
+</div>
+{% endfor %}
+
+{% if show_key %}
+<div id="answer-key" class="card mt-4"><div class="card-body">
+  <h2 class="h6">Answer key (faculty only)</h2>
+  <p class="mb-0">{% for item in items %}{{ forloop.counter }}-{{ item.correct_label }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
+</div></div>
+{% endif %}
+{% endblock %}
