@@ -31,13 +31,14 @@ Format: each entry records what we decided, why, and what it costs us.
 **Decision:** `config/settings/base.py` holds shared settings, `dev.py` the development overrides. `prod.py` comes in Phase 8.
 **Consequence:** `SECRET_KEY` currently sits in `base.py`. It must move to an environment variable before any deployment.
 
-## D-006: Engine works on IDs and indexes, not text (2026-11-20)
-**Status:** Accepted
-**Decision:** `core/generation` receives questions as (id, topic, difficulty, type, choice count, correct index) and returns question IDs plus choice orders. The database layer builds the saved snapshot.
-**Consequence:** Needs a translation step between ORM objects and engine objects.
+## D-006 The engine works on IDs and indexes, not text
+The core engine never sees question text. The database layer builds snapshots from `question_id` and `choice_order`. This keeps the engine small, testable, and Django-free.
 
-## D-007: Greedy least-reuse-first selection with balanced allocation (2026-11-20)
-**Status:** Accepted
-**Decision:** Each version uses the lowest reuse level at which the configuration is feasible, with per-cell fair-share caps; optional retries when a similarity limit is set.
-**Reason:** Simple, explainable, measurably low overlap (see tests). Not guaranteed optimal.
-**Consequence:** If a proven minimum overlap is needed later, revisit with OR-Tools.
+## D-007 Greedy least-reuse-first selection with balanced allocation
+Measured, not proven optimal. Reduced overlap from about 12% to about 0 for 3 versions on a 72-question bank. OR-Tools is a possible later upgrade.
+
+## D-008 Exams hold snapshots, not live links
+`Exam.bank` is SET_NULL, topic requirements store names, and version codes are globally unique. Editing or deleting a bank never changes an existing exam or its answer key.
+
+## D-009 Generation is all-or-nothing
+`generate_exam_versions` computes everything first, then writes inside one `transaction.atomic()`. Any failure rolls back, so an exam never ends up with half its versions.
