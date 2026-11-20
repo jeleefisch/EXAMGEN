@@ -59,7 +59,7 @@ class Question(models.Model):
     )
     topic = models.ForeignKey(
         Topic,
-        on_delete=models.PROTECT,
+        on_delete=models.RESTRICT,
         related_name='questions',
     )
     text = models.TextField()
