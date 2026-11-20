@@ -71,7 +71,11 @@
     <strong>{{ v.code }}</strong>
     <span>
       <a href="{% url 'exams:version' v.pk %}">Paper</a> ·
-      <a href="{% url 'exams:version' v.pk %}?key=1">With answer key</a>
+        <a href="{% url 'exams:version' v.pk %}?key=1">With answer key</a>
+      {% if finalized %} ·
+      <a href="{% url 'documents:paper' v.pk %}">Paper PDF</a> ·
+      <a href="{% url 'documents:sheets' v.pk %}">Answer sheets PDF</a>
+      {% endif %}
     </span>
   </div>
   {% endfor %}

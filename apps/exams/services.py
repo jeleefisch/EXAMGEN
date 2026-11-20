@@ -20,6 +20,7 @@ from .models import (
     GenerationRun,
     VersionChoice,
     VersionQuestion,
+    new_seed,
 )
 
 
