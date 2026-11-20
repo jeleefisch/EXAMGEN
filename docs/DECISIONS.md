@@ -30,3 +30,14 @@ Format: each entry records what we decided, why, and what it costs us.
 **Status:** Accepted
 **Decision:** `config/settings/base.py` holds shared settings, `dev.py` the development overrides. `prod.py` comes in Phase 8.
 **Consequence:** `SECRET_KEY` currently sits in `base.py`. It must move to an environment variable before any deployment.
+
+## D-006: Engine works on IDs and indexes, not text (2026-11-20)
+**Status:** Accepted
+**Decision:** `core/generation` receives questions as (id, topic, difficulty, type, choice count, correct index) and returns question IDs plus choice orders. The database layer builds the saved snapshot.
+**Consequence:** Needs a translation step between ORM objects and engine objects.
+
+## D-007: Greedy least-reuse-first selection with balanced allocation (2026-11-20)
+**Status:** Accepted
+**Decision:** Each version uses the lowest reuse level at which the configuration is feasible, with per-cell fair-share caps; optional retries when a similarity limit is set.
+**Reason:** Simple, explainable, measurably low overlap (see tests). Not guaranteed optimal.
+**Consequence:** If a proven minimum overlap is needed later, revisit with OR-Tools.
