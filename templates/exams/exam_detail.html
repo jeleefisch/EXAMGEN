@@ -61,6 +61,9 @@
 {% endif %}
 
 <h2 class="h5">Versions</h2>
+{% if finalized and versions %}
+<p><a class="btn btn-outline-dark btn-sm" href="{% url 'documents:key' exam.pk %}">Answer key PDF (all versions, faculty only)</a></p>
+{% endif %}
 {% if versions %}
 <div class="list-group mb-4">
   {% for v in versions %}

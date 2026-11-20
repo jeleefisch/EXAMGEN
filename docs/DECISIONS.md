@@ -52,12 +52,11 @@ Measured, not proven optimal. Reduced overlap from about 12% to about 0 for 3 ve
 - Generation service `apps/exams/services.py` (atomic, verified, snapshot-based)
 - Test suite: 83 passing
 
-## Implemented, unverified (not yet run)
-- Exam form with feasibility rejection, list/detail/edit/generate/finalize/version views, templates
-- `apps/exams/test_views.py` (10 tests; expect 93 total)
+## D-010 PDFs can only be downloaded for finalized exams
+Printed papers must always match the saved key. Drafts can still be regenerated, so they are not printable.
 
-## Planned
-- Phase 2 gaps: delete UI, text search, profile page, get_or_create for Profile
-- Phase 4: ReportLab PDFs (exam, key, answer sheet with QR + markers)
-- Phase 4.5: OMR feasibility spike (check OpenCV/NumPy on Python 3.14)
-- Phases 5-8: OMR, grading and review, reports/metrics, deployment
+## D-011 Answer-sheet geometry lives in one file
+`core/sheet_layout.py` is the only place bubble positions are defined. The PDF writer draws from it and the OMR reader will locate bubbles from it, so they cannot drift apart. QR payload is `EG1|<version code>|<sheet serial>|<crc16>`; the checksum detects damaged codes (manual entry is the fallback).
+
+## D-012 PDF writers take plain dataclasses, not Django models
+This keeps them testable without Django. `loaders.py` converts database rows into those dataclasses.
