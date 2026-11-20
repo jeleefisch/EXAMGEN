@@ -77,6 +77,12 @@ class SnapshotIntegrityTests(TestCase):
             text=self.question.text, qtype='TF', topic_name='Algebra',
             difficulty='Easy', points=1, correct_label='A')
 
+        self.assertEqual(self.exam.versions.count(), 1)
+
+    def test_deleting_a_topic_that_still_has_questions_is_blocked(self):
+        with self.assertRaises(RestrictedError):
+            self.topic.delete()
+
     def test_editing_the_bank_question_does_not_change_the_snapshot(self):
         self.question.text = 'CHANGED'
         self.question.save()
