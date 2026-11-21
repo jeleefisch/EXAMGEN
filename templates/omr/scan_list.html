@@ -4,6 +4,7 @@
   <h1 class="h3 mb-0">Scanned sheets · {{ exam.title }}</h1>
   <div>
     <a class="btn btn-primary btn-sm" href="{% url 'omr:upload' exam.pk %}">Upload photos</a>
+    <a class="btn btn-outline-primary btn-sm" href="{% url 'grading:results' exam.pk %}">Results</a>    
     <a class="btn btn-outline-secondary btn-sm" href="{% url 'exams:detail' exam.pk %}">Back to exam</a>
   </div>
 </div>
