@@ -1,4 +1,6 @@
-from django.contrib.auth import login
+from django import forms
+from django.contrib.auth import get_user_model, login
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib import messages
@@ -8,6 +10,18 @@ from django.views.generic import TemplateView
 from apps.banks.models import QuestionBank
 
 from .forms import LoginForm, ProfileForm, RegistrationForm
+
+
+class ProfileEditForm(forms.ModelForm):
+    class Meta:
+        model = get_user_model()
+        fields = ("first_name", "last_name", "email")
+        widgets = {f: forms.TextInput(attrs={"class": "form-control"})
+                   for f in ("first_name", "last_name")}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["email"].widget.attrs["class"] = "form-control"
 
 
 class DashboardView(LoginRequiredMixin, TemplateView):
@@ -39,6 +53,19 @@ def register(request):
     else:
         form = RegistrationForm()
     return render(request, 'accounts/register.html', {'form': form})
+
+
+@login_required
+def profile(request):
+    if request.method == 'POST':
+        form = ProfileEditForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Profile saved.')
+            return redirect('accounts:profile')
+    else:
+        form = ProfileEditForm(instance=request.user)
+    return render(request, 'accounts/profile.html', {'form': form})
 
 
 class FacultyLoginView(LoginView):

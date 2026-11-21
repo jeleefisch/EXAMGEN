@@ -7,7 +7,7 @@
     <a class="btn btn-outline-secondary btn-sm" href="{% url 'exams:detail' exam.pk %}">Back to exam</a>
   </div>
 </div>
-{% if not rows %}
+{% if not total_count %}
   <p class="text-muted">No scanned sheets yet. Upload photos first.</p>
 {% else %}
 <form method="post" class="mb-3">
@@ -56,6 +56,16 @@
   </div>
 </div>
 
+<form method="get" class="d-flex gap-2 mb-3" style="max-width: 460px;">
+  <input class="form-control form-control-sm" type="search" name="q" value="{{ q }}"
+         placeholder="Search student, version or sheet number" maxlength="60">
+  <button class="btn btn-outline-secondary btn-sm" type="submit">Search</button>
+  {% if q %}<a class="btn btn-link btn-sm" href="{% url 'grading:results' exam.pk %}">Clear</a>{% endif %}
+</form>
+
+{% if q and not rows %}
+  <p class="text-muted">No sheets match &ldquo;{{ q }}&rdquo;.</p>
+{% else %}
 <table class="table table-sm bg-white align-middle">
   <thead><tr><th>Version</th><th>Sheet</th><th>Student</th><th>Status</th><th>Score</th><th></th></tr></thead>
   <tbody>
@@ -78,5 +88,6 @@
   {% endfor %}
   </tbody>
 </table>
+{% endif %}
 {% endif %}
 {% endblock %}

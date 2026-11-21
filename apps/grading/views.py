@@ -41,6 +41,15 @@ def _stats(rows):
     }
 
 
+def _matches(row, q):
+    """Search by student name, version code or sheet number."""
+    q = q.lower()
+    scan, grade = row["scan"], row["grade"]
+    return (q in (grade.student_label if grade else "").lower()
+            or (scan.version is not None and q in scan.version.code.lower())
+            or q == str(scan.serial or ""))
+
+
 @login_required
 def results(request, exam_pk):
     exam = _exam(request, exam_pk)
@@ -65,8 +74,13 @@ def results(request, exam_pk):
         return redirect("grading:results", exam_pk=exam.pk)
 
     rows = [{"scan": s, "grade": getattr(s, "grade", None), "ready": s.is_ready} for s in scans]
-    context = {"exam": exam, "rows": rows}
-    context.update(_stats(rows))
+    context = {"exam": exam, "q": ""}
+    context.update(_stats(rows))                 # statistics always cover every sheet
+    q = request.GET.get("q", "").strip()[:60]
+    if q:
+        context["q"] = q
+        rows = [r for r in rows if _matches(r, q)]
+    context["rows"] = rows
     return render(request, "grading/results.html", context)
 
 

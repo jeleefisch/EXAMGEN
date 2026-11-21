@@ -8,7 +8,7 @@ Standalone (no Django). Pipeline:
   5. decide per item: selected / blank / multiple / ambiguous  (never guess)
 
 All positions come from core/sheet_layout.py. Run:
-    python -m spike.omr_spike photo.jpg --items 40 --tf 7,14 --debug out.png
+    python -m core.omr_reader photo.jpg --items 40 --tf 7,14 --debug out.png
 """
 from __future__ import annotations
 
@@ -20,7 +20,7 @@ import cv2
 import numpy as np
 
 from core import sheet_layout as L
-from spike.erasure import flag_erasures
+from core.omr_erasure import flag_erasures
 
 DPI = 150
 SCALE = DPI / 72.0
@@ -342,7 +342,6 @@ def main(argv=None):
         res = read_sheet(image, choices)
     except OMRError as e:
         raise SystemExit(f"UNREADABLE: {e}")
-    from spike.erasure import flag_erasures
     flag_erasures(res)
 
     print(f"QR: {'OK ' + str(res.version_code) + ' sheet ' + str(res.serial) if res.qr_ok else 'NOT READ'}"

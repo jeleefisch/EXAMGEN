@@ -6,6 +6,7 @@ from django.db import transaction
 from django.db.models import Count, Q
 from django.forms import inlineformset_factory
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.views.generic import CreateView, ListView, UpdateView
 
 from .forms import (
@@ -59,6 +60,31 @@ class BankUpdateView(FacultyOwnedMixin, UpdateView):
 
 
 @login_required
+def bank_delete(request, pk):
+    # Reconstructed to satisfy apps/grading/tests_phase9.py (original was lost).
+    from apps.exams.models import Exam  # local import avoids a circular import
+
+    bank = get_object_or_404(QuestionBank, pk=pk, owner=request.user)
+    if request.method == 'POST':
+        with transaction.atomic():
+            # Exams keep their own snapshot of every question; only the link is cleared.
+            Exam.objects.filter(bank=bank).update(bank=None)
+            bank.delete()
+        messages.success(request, 'Question bank deleted.')
+        return redirect('banks:bank_list')
+    count = bank.questions.count()
+    return render(request, 'banks/confirm_delete.html', {
+        'title': 'Delete question bank',
+        'what': f'{bank.name} ({count} question{"s" if count != 1 else ""})',
+        'warning': (
+            'The bank, its topics and its questions will be deleted. '
+            'Exams already created keep their own copy of their questions.'
+        ),
+        'cancel_url': reverse('banks:bank_list'),
+    })
+
+
+@login_required
 def topic_create(request, bank_pk):
     bank = get_object_or_404(QuestionBank, pk=bank_pk, owner=request.user)
     if request.method == 'POST':
@@ -84,6 +110,7 @@ def question_list(request):
     topic_id = request.GET.get('topic')
     difficulty = request.GET.get('difficulty')
     qtype = request.GET.get('qtype')
+    active = request.GET.get('active')
     if bank_id:
         qs = qs.filter(bank_id=bank_id)
     if topic_id:
@@ -92,8 +119,10 @@ def question_list(request):
         qs = qs.filter(difficulty=difficulty)
     if qtype:
         qs = qs.filter(qtype=qtype)
-    if request.GET.get('active') == '1':
+    if active == '1':
         qs = qs.filter(is_active=True)
+    elif active == '0':
+        qs = qs.filter(is_active=False)
 
     return render(request, 'banks/question_list.html', {
         'questions': qs,
@@ -178,4 +207,19 @@ def question_edit(request, pk):
         'formset': formset,
         'bank': question.bank,
         'object': question,
+    })
+
+
+@login_required
+def question_delete(request, pk):
+    question = get_object_or_404(Question, pk=pk, bank__owner=request.user)
+    if request.method == 'POST':
+        question.delete()
+        messages.success(request, 'Question deleted.')
+        return redirect('banks:question_list')
+    return render(request, 'banks/confirm_delete.html', {
+        'title': 'Delete question',
+        'what': question.text[:200],
+        'warning': 'Exams already created keep their own copy of this question.',
+        'cancel_url': reverse('banks:question_list'),
     })

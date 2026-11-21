@@ -19,6 +19,7 @@
                     <a class="btn btn-sm btn-outline-secondary" href="{% url 'banks:bank_edit' bank.pk %}">Edit</a>
                     <a class="btn btn-sm btn-outline-primary" href="{% url 'banks:topic_create' bank.pk %}">Add Topic</a>
                     <a class="btn btn-sm btn-primary" href="{% url 'banks:question_create' bank.pk %}">Add Question</a>
+                    <a class="btn btn-sm btn-outline-danger" href="{% url 'banks:bank_delete' bank.pk %}">Delete</a>
                 </td>
             </tr>
             {% empty %}

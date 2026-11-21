@@ -28,6 +28,7 @@
             <select class="form-control" name="active">
                 <option value="">All statuses</option>
                 <option value="1" {% if request.GET.active == "1" %}selected{% endif %}>Active</option>
+                <option value="0" {% if request.GET.active == "0" %}selected{% endif %}>Inactive</option>
             </select>
         </div>
         <div class="col-md-3">
@@ -47,10 +48,13 @@
                 <td>{{ question.bank.name }}</td>
                 <td>{{ question.topic.name }}</td>
                 <td>{{ question.get_qtype_display }}</td>
-                <td>{{ question.difficulty }}</td>
+                <td>{{ question.get_difficulty_display|default:question.difficulty }}</td>
                 <td>{{ question.points }}</td>
                 <td>{% if question.is_active %}<span class="badge text-bg-success">Active</span>{% else %}<span class="badge text-bg-secondary">Inactive</span>{% endif %}</td>
-                <td><a class="btn btn-sm btn-outline-primary" href="{% url 'banks:question_edit' question.pk %}">Edit</a></td>
+                <td class="text-nowrap">
+                    <a class="btn btn-sm btn-outline-primary" href="{% url 'banks:question_edit' question.pk %}">Edit</a>
+                    <a class="btn btn-sm btn-outline-danger" href="{% url 'banks:question_delete' question.pk %}">Delete</a>
+                </td>
             </tr>
             {% empty %}
             <tr><td colspan="8" class="text-center text-muted py-4">No questions match the filters.</td></tr>

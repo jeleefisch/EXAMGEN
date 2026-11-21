@@ -24,7 +24,7 @@ CONDITIONS = {
 }
 MARK_KINDS = ["solid", "faint", "double", "blank"]
 MARK_PROBS = [0.60, 0.15, 0.10, 0.15]
-COUNT_KEYS = ("sheets", "read", "unreadable", "crashed", "id_wrong",
+COUNT_KEYS = ("sheets", "read", "unreadable", "crashed", "qr_unread", "id_wrong",
               "items", "correct", "flagged", "confident_wrong")
 
 
@@ -86,8 +86,10 @@ def _run_condition(name, cfg, sheets, rng, items_range, offenders):
             continue
         flag_erasures(res)
         counts["read"] += 1
-        if not res.qr_ok or res.version_code != version or res.serial != serial:
-            counts["id_wrong"] += 1
+        if not res.qr_ok:
+            counts["qr_unread"] += 1           # the app would ask the teacher to pick the version
+        elif res.version_code != version or res.serial != serial:
+            counts["id_wrong"] += 1            # QR decoded but gave the wrong identity
         for r, t in zip(res.items, truth):
             counts["items"] += 1
             outcome = _outcome(r, t)
@@ -118,12 +120,12 @@ def _pct(n, d):
 
 def format_report(result, markdown=False):
     header = ["condition", "sheets", "unreadable", "crashed", "items",
-              "correct", "flagged", "confident wrong", "ID wrong"]
+              "correct", "flagged", "confident wrong", "QR not read", "ID wrong"]
     rows = []
     for name, c in {**result["conditions"], "TOTAL": result["total"]}.items():
         rows.append([name, c["sheets"], c["unreadable"], c["crashed"], c["items"],
                      f"{c['correct']} ({_pct(c['correct'], c['items'])})",
-                     c["flagged"], c["confident_wrong"], c["id_wrong"]])
+                     c["flagged"], c["confident_wrong"], c["qr_unread"], c["id_wrong"]])
     lines = [
         "DIGITAL/SYNTHETIC results: rendered sheets with simulated camera effects, "
         "not printed paper.",
@@ -140,7 +142,9 @@ def format_report(result, markdown=False):
         for r in table:
             lines.append("  ".join(cell.ljust(widths[i]) for i, cell in enumerate(r)))
     lines += ["", "confident wrong = a wrong answer the reader did NOT flag (the dangerous error).",
-              "flagged = sent to manual review (acceptable)."]
+              "flagged = sent to manual review (acceptable).",
+              "QR not read = the teacher must pick the version by hand.",
+              "ID wrong = a QR decoded but gave the wrong version or serial."]
     if result["offenders"] and not markdown:
         lines.append("")
         lines.append(f"confident-wrong rows: {len(result['offenders'])}")

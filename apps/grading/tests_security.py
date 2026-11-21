@@ -105,3 +105,10 @@ class SecurityTests(TestCase):
         self.assertIn("'=1+1", body)
         self.assertIn("'+cmd", body)
         self.assertNotIn(",+cmd", body)
+
+    def test_scan_image_never_served_as_html(self):
+        SheetScan.objects.filter(pk=self.scan.pk).update(original_name="evil.html")
+        resp = self.client.get(reverse("omr:image", args=[self.scan.pk]))
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp["Content-Type"], "application/octet-stream")
+        self.assertEqual(resp["X-Content-Type-Options"], "nosniff")

@@ -14,7 +14,7 @@
         <a class="navbar-brand fw-semibold" href="{% url 'dashboard' %}">ExamGen</a>
         {% if user.is_authenticated %}
         <div class="d-flex align-items-center text-white">
-            <span class="me-3 d-none d-sm-inline">{{ user.get_full_name|default:user.username }}</span>
+            <a class="me-3 d-none d-sm-inline text-white text-decoration-none" href="{% url 'accounts:profile' %}">{{ user.get_full_name|default:user.username }}</a>
             <form method="post" action="{% url 'accounts:logout' %}">
                 {% csrf_token %}
                 <button class="btn btn-outline-light btn-sm" type="submit">Logout</button>
@@ -34,7 +34,7 @@
                 <a class="nav-link" href="{% url 'banks:bank_list' %}">Question Banks</a>
                 <a class="nav-link" href="{% url 'banks:question_list' %}">Questions</a>
                 <a class="nav-link" href="{% url 'exams:list' %}">Exams</a>
-
+                <a class="nav-link" href="{% url 'accounts:profile' %}">Profile</a>
             </nav>
         </aside>
         <main class="col-md-9 col-lg-10 examgen-main">
