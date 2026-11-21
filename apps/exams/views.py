@@ -9,7 +9,11 @@ from apps.banks.models import QuestionBank
 
 from .forms import ExamForm
 from .models import Exam, ExamVersion, VersionChoice
-from .services import ExamFinalizedError, generate_exam_versions
+from .services import (
+    ExamFinalizedError,
+    SnapshotMismatchError,
+    generate_exam_versions,
+)
 
 FLASH_KEY = "exam_flash"
 
@@ -110,6 +114,10 @@ def exam_generate(request, pk):
         outcome = generate_exam_versions(exam)
     except ExamFinalizedError:
         _flash(request, ok=False, notice="This exam is finalized and cannot be regenerated.")
+        return redirect("exams:detail", pk=exam.pk)
+    except SnapshotMismatchError:
+        _flash(request, ok=False,
+               notice="The question bank changed while generating. Nothing was changed. Please try again.")
         return redirect("exams:detail", pk=exam.pk)
     if outcome.success:
         _flash(request, ok=True, notice=f"Generated {len(outcome.versions)} version(s).",

@@ -28,6 +28,11 @@ class ExamFinalizedError(Exception):
     """Raised when someone tries to regenerate a finalized exam."""
 
 
+class SnapshotMismatchError(RuntimeError):
+    """Raised when the saved snapshot would not match the engine's answer key
+    (for example, the bank was edited while generating). Nothing is saved."""
+
+
 @dataclass
 class GenerationOutcome:
     success: bool
@@ -96,7 +101,7 @@ def _save_version(exam, core_version, sequence, db_questions, choices_by_q):
             )
         # Safety net: the engine's key must match the snapshot we just built.
         if key_label != item.correct_label:
-            raise RuntimeError(
+            raise SnapshotMismatchError(
                 f"Key mismatch for question {src.pk}: "
                 f"engine says {item.correct_label}, snapshot says {key_label}"
             )
@@ -120,6 +125,9 @@ def generate_exam_versions(exam: Exam) -> GenerationOutcome:
     difficulty_required = exam.difficulty_required()
 
     # 2. Run the engine (pure Python, nothing written yet).
+    #    A fresh seed per generation, so "Regenerate" gives a different result.
+    #    It is stored on the exam only if generation succeeds (see step 5).
+    seed = new_seed()
     report = generate_versions(
         usable,
         topic_required,
@@ -128,7 +136,7 @@ def generate_exam_versions(exam: Exam) -> GenerationOutcome:
         exam.num_versions,
         shuffle_question_order=exam.shuffle_questions,
         shuffle_answer_choices=exam.shuffle_choices,
-        base_seed=exam.base_seed,
+        base_seed=seed,
         code_prefix=f"E{exam.pk}-",
         max_similarity=exam.max_similarity,
     )
@@ -167,6 +175,10 @@ def generate_exam_versions(exam: Exam) -> GenerationOutcome:
             raise ExamFinalizedError("A finalized exam cannot be regenerated.")
 
         ExamVersion.objects.filter(exam=exam).delete()  # draft only (checked above)
+
+        # .update() does not touch updated_at, so the exam is not marked stale.
+        Exam.objects.filter(pk=exam.pk).update(base_seed=seed)
+        exam.base_seed = seed
 
         saved = [
             _save_version(exam, v, seq, db_questions, choices_by_q)

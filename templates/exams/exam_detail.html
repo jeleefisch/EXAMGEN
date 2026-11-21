@@ -73,9 +73,9 @@
       <a href="{% url 'exams:version' v.pk %}">Paper</a> ·
         <a href="{% url 'exams:version' v.pk %}?key=1">With answer key</a>
       {% if finalized %} ·
-      <a href="{% url 'documents:paper' v.pk %}">Paper PDF</a> ·
-      <a href="{% url 'documents:sheets' v.pk %}">Answer sheets PDF</a>
-      {% endif %}
+      <a class="fw-semibold" href="{% url 'documents:copies' v.pk %}">Student copies PDF</a> ·
+      <a class="text-muted" href="{% url 'documents:paper' v.pk %}">Paper only</a> ·
+      <a class="text-muted" href="{% url 'documents:sheets' v.pk %}">Sheets only</a>{% endif %}
     </span>
   </div>
   {% endfor %}
