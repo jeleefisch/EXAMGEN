@@ -60,3 +60,12 @@ Printed papers must always match the saved key. Drafts can still be regenerated,
 
 ## D-012 PDF writers take plain dataclasses, not Django models
 This keeps them testable without Django. `loaders.py` converts database rows into those dataclasses.
+
+## D-013 Student copies: the answer sheet is the last page of each student's own paper
+Suggested by the project owner. One PDF per version; each copy is the paper followed by a full-page answer sheet with that copy's QR code. The version code and sheet number are printed on every page, so faculty cannot mix up papers and sheets. Trade-offs: papers become consumable, and the sheet should be printed single-sided and photographed flat (or detached). The standalone paper and sheets downloads remain available.
+
+## D-014 A fresh random seed for every generation
+Each successful generation draws a new seed and stores it in `Exam.base_seed`, so "Regenerate" gives a different result. A failed generation keeps the old seed and saves nothing. The stored seed still lets any saved set of versions be reproduced. The seed is written with `.update()` so the exam is not marked stale.
+
+## D-015 Reprints continue serial numbers
+The answer-sheets PDF accepts `?start=N` so a reprint never reuses a sheet serial within a version. The "of N" total is shown only when numbering starts at 1.
