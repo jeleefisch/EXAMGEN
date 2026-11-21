@@ -15,6 +15,7 @@ import numpy as np
 
 from core import sheet_layout as L
 from spike.omr_spike import OMRError, code_of, compare_to_truth, read_sheet
+from spike.erasure import flag_erasures
 from spike.synth import photograph, render_sheet, shade
 
 CONDITIONS = {
@@ -70,6 +71,7 @@ def run_condition(name, cfg, sheets, rng):
             crashed += 1
             print(f"  [{name} #{s}] CRASH: {type(e).__name__}: {e}")
             continue
+        flag_erasures(res)
         if not res.qr_ok or res.version_code != version or res.serial != serial:
             qr_bad += 1
         for r, t in zip(res.items, truth):

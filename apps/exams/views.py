@@ -84,7 +84,7 @@ def exam_detail(request, pk):
     versions = list(exam.versions.order_by("sequence"))
     finalized = _is_final(exam)
     # Stale = settings were saved after the last generation.
-    stale = bool(versions) and (run is None or exam.updated_at > run.created_at)
+    stale = bool(versions) and not finalized and (run is None or exam.updated_at > run.created_at)
 
     overlap_rows, mean_pct, max_pct = [], None, None
     if run:

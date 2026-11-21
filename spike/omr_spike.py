@@ -20,6 +20,7 @@ import cv2
 import numpy as np
 
 from core import sheet_layout as L
+from spike.erasure import flag_erasures
 
 DPI = 150
 SCALE = DPI / 72.0
@@ -341,6 +342,8 @@ def main(argv=None):
         res = read_sheet(image, choices)
     except OMRError as e:
         raise SystemExit(f"UNREADABLE: {e}")
+    from spike.erasure import flag_erasures
+    flag_erasures(res)
 
     print(f"QR: {'OK ' + str(res.version_code) + ' sheet ' + str(res.serial) if res.qr_ok else 'NOT READ'}"
           f"   rotation steps: {res.rotation_steps}")
