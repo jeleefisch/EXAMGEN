@@ -114,6 +114,15 @@ def qr_box() -> Rect:
     return Rect(PAGE_W - 60.0 - QR_SIZE, PAGE_H - 70.0 - QR_SIZE, QR_SIZE, QR_SIZE)
 
 
+def to_pixel(x_pt: float, y_pt: float, scale: float) -> tuple[float, float]:
+    """Convert a sheet position to image pixels.
+
+    The PDF origin is the BOTTOM-left, an image's origin is the TOP-left, so
+    y is flipped. scale = pixels per point (150 dpi image: 150 / 72).
+    """
+    return x_pt * scale, (PAGE_H - y_pt) * scale
+
+
 # --- QR payload: "EG1|<version code>|<sheet serial>|<check>" ----------------
 PAYLOAD_PREFIX = "EG1"
 

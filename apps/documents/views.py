@@ -6,9 +6,10 @@ from django.shortcuts import get_object_or_404
 
 from apps.exams.models import Exam, ExamVersion
 
-from . import loaders, pdf
+from . import booklet, loaders, pdf
 
 MAX_COPIES = 500
+MAX_START_SERIAL = 100000
 NOT_FINAL = "Finalize the exam before downloading PDFs, so printed papers always match the saved key."
 
 
@@ -31,13 +32,21 @@ def _is_final(exam):
     return exam.status == Exam.Status.FINALIZED
 
 
+def _positive_int(request, name, default):
+    try:
+        value = int(request.GET.get(name, default))
+    except (TypeError, ValueError):
+        value = default
+    return max(value, 1)
+
+
 def _copies(request, exam):
     default = max(1, math.ceil(exam.num_students / exam.num_versions))
-    try:
-        n = int(request.GET.get("copies", default))
-    except ValueError:
-        n = default
-    return min(max(n, 1), MAX_COPIES)
+    return min(_positive_int(request, "copies", default), MAX_COPIES)
+
+
+def _start_serial(request):
+    return min(_positive_int(request, "start", 1), MAX_START_SERIAL)
 
 
 @login_required
@@ -56,7 +65,8 @@ def sheets_pdf(request, pk):
     if not _is_final(exam):
         return HttpResponseForbidden(NOT_FINAL)
     data = pdf.build_answer_sheets(
-        loaders.exam_doc(exam), loaders.version_doc(version), _copies(request, exam)
+        loaders.exam_doc(exam), loaders.version_doc(version),
+        _copies(request, exam), start_serial=_start_serial(request),
     )
     return _pdf(data, f"answer-sheets-{version.code}.pdf")
 
@@ -69,3 +79,14 @@ def key_pdf(request, exam_pk):
     versions = [loaders.version_doc(v) for v in exam.versions.order_by("sequence")]
     data = pdf.build_answer_key(loaders.exam_doc(exam), versions)
     return _pdf(data, f"answer-key-exam-{exam.pk}.pdf", private=True)
+
+@login_required
+def copies_pdf(request, pk):
+    version = _owned_version(request, pk)
+    exam = version.exam
+    if not _is_final(exam):
+        return HttpResponseForbidden(NOT_FINAL)
+    data = booklet.build_student_copies(
+        loaders.exam_doc(exam), loaders.version_doc(version), _copies(request, exam)
+    )
+    return _pdf(data, f"student-copies-{version.code}.pdf")
