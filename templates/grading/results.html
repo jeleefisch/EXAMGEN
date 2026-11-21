@@ -16,7 +16,46 @@
   <button class="btn btn-primary btn-sm" type="submit">Grade all ready sheets</button>
   {% if graded_count %}<a class="btn btn-outline-primary btn-sm" href="{% url 'grading:csv' exam.pk %}">Download CSV</a>{% endif %}
 </form>
-{% if graded_count %}<p class="text-muted">{{ graded_count }} graded · mean {{ mean_percent }}%</p>{% endif %}
+
+<div class="row g-2 mb-3">
+  <div class="col-6 col-md-2">
+    <div class="border rounded bg-white p-2 text-center">
+      <div class="small text-muted">Graded</div>
+      <div class="h5 mb-0">{{ graded_count }} <span class="small text-muted">/ {{ total_count }}</span></div>
+    </div>
+  </div>
+  <div class="col-6 col-md-2">
+    <div class="border rounded bg-white p-2 text-center">
+      <div class="small text-muted">Mean</div>
+      <div class="h5 mb-0">{% if mean_percent is not None %}{{ mean_percent }}%{% else %}&mdash;{% endif %}</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-2">
+    <div class="border rounded bg-white p-2 text-center">
+      <div class="small text-muted">Highest</div>
+      <div class="h5 mb-0">{% if highest_percent is not None %}{{ highest_percent }}%{% else %}&mdash;{% endif %}</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-2">
+    <div class="border rounded bg-white p-2 text-center">
+      <div class="small text-muted">Lowest</div>
+      <div class="h5 mb-0">{% if lowest_percent is not None %}{{ lowest_percent }}%{% else %}&mdash;{% endif %}</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-2">
+    <div class="border rounded bg-white p-2 text-center">
+      <div class="small text-muted">Ready to grade</div>
+      <div class="h5 mb-0">{{ ready_count }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-2">
+    <div class="border rounded bg-white p-2 text-center">
+      <div class="small text-muted">Needs review</div>
+      <div class="h5 mb-0">{{ needs_review_count }}</div>
+    </div>
+  </div>
+</div>
+
 <table class="table table-sm bg-white align-middle">
   <thead><tr><th>Version</th><th>Sheet</th><th>Student</th><th>Status</th><th>Score</th><th></th></tr></thead>
   <tbody>

@@ -81,3 +81,42 @@ class GradingTests(TestCase):
                           ("grading:csv", self.exam.pk),
                           ("grading:result", grade.pk)]:
             self.assertEqual(self.client.get(reverse(name, args=[arg])).status_code, 404)
+
+    def test_statistics_follow_the_sheet_through_its_stages(self):
+        url = reverse("grading:results", args=[self.exam.pk])
+
+        # Stage 1: item 4 is still uncertain, so the sheet needs review.
+        ctx = self.client.get(url).context
+        self.assertEqual((ctx["graded_count"], ctx["total_count"]), (0, 1))
+        self.assertEqual((ctx["ready_count"], ctx["needs_review_count"]), (0, 1))
+        for key in ("mean_percent", "highest_percent", "lowest_percent"):
+            self.assertIsNone(ctx[key])
+
+        # Stage 2: resolved, so it is ready but not yet graded.
+        self.resolve("A")
+        ctx = self.client.get(url).context
+        self.assertEqual((ctx["graded_count"], ctx["ready_count"], ctx["needs_review_count"]),
+                         (0, 1, 0))
+
+        # Stage 3: graded (2 of 6 = 33.3%).
+        self.client.post(url, {"action": "grade_all"})
+        ctx = self.client.get(url).context
+        self.assertEqual((ctx["graded_count"], ctx["ready_count"], ctx["needs_review_count"]),
+                         (1, 0, 0))
+        for key in ("mean_percent", "highest_percent", "lowest_percent"):
+            self.assertAlmostEqual(ctx[key], 33.3, delta=0.1)
+
+    def test_highest_lowest_and_mean_with_two_sheets(self):
+        self.resolve("A")                                    # sheet 1: 2/6 = 33.3%
+        marks2 = [(1, "A", 0.85), (2, "A", 0.85), (3, "B", 0.85), (4, "A", 0.85)]
+        self.client.post(reverse("omr:upload", args=[self.exam.pk]),
+                         {"photos": photo_file("G1-A", 2, self.types, marks2)})
+        self.assertEqual(SheetScan.objects.count(), 2)       # sheet 2: 3/6 = 50.0%
+
+        url = reverse("grading:results", args=[self.exam.pk])
+        self.client.post(url, {"action": "grade_all"})
+        ctx = self.client.get(url).context
+        self.assertEqual((ctx["graded_count"], ctx["total_count"]), (2, 2))
+        self.assertAlmostEqual(ctx["highest_percent"], 50.0, delta=0.1)
+        self.assertAlmostEqual(ctx["lowest_percent"], 33.3, delta=0.1)
+        self.assertAlmostEqual(ctx["mean_percent"], 41.65, delta=0.1)

@@ -21,6 +21,26 @@ def _exam(request, pk):
     return get_object_or_404(Exam, pk=pk, owner=request.user)
 
 
+def _stats(rows):
+    """Summary numbers for the results page.
+
+    Percentages are used for highest/lowest/mean because max_score comes from each
+    version's own items, so raw scores are not comparable across versions.
+    Needs review = no grade yet and not ready (this includes unreadable scans).
+    """
+    grades = [r["grade"] for r in rows if r["grade"] is not None]
+    percents = [g.percent for g in grades]
+    return {
+        "graded_count": len(grades),
+        "mean_percent": round(sum(percents) / len(percents), 1) if percents else None,
+        "highest_percent": max(percents) if percents else None,
+        "lowest_percent": min(percents) if percents else None,
+        "ready_count": sum(1 for r in rows if r["grade"] is None and r["ready"]),
+        "needs_review_count": sum(1 for r in rows if r["grade"] is None and not r["ready"]),
+        "total_count": len(rows),
+    }
+
+
 @login_required
 def results(request, exam_pk):
     exam = _exam(request, exam_pk)
@@ -45,10 +65,9 @@ def results(request, exam_pk):
         return redirect("grading:results", exam_pk=exam.pk)
 
     rows = [{"scan": s, "grade": getattr(s, "grade", None), "ready": s.is_ready} for s in scans]
-    grades = [r["grade"] for r in rows if r["grade"] is not None]
-    mean = round(sum(g.percent for g in grades) / len(grades), 1) if grades else None
-    return render(request, "grading/results.html", {
-        "exam": exam, "rows": rows, "graded_count": len(grades), "mean_percent": mean})
+    context = {"exam": exam, "rows": rows}
+    context.update(_stats(rows))
+    return render(request, "grading/results.html", context)
 
 
 @login_required
