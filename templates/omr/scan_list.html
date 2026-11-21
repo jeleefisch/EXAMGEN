@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h3 mb-0">Scanned sheets · {{ exam.title }}</h1>
+  <div>
+    <a class="btn btn-primary btn-sm" href="{% url 'omr:upload' exam.pk %}">Upload photos</a>
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'exams:detail' exam.pk %}">Back to exam</a>
+  </div>
+</div>
+{% if not scans %}
+  <p class="text-muted">No sheets uploaded yet.</p>
+{% else %}
+<table class="table table-sm bg-white align-middle">
+  <thead><tr><th>File</th><th>Version</th><th>Sheet</th><th>Status</th><th>To review</th><th></th></tr></thead>
+  <tbody>
+  {% for s in scans %}
+    <tr>
+      <td>{{ s.original_name }}</td>
+      <td>{{ s.version.code|default:"-" }}</td>
+      <td>{{ s.serial|default:"-" }}</td>
+      <td>
+        {% if s.is_ready %}<span class="badge bg-success">Ready</span>
+        {% elif s.status == "unreadable" %}<span class="badge bg-danger">Unreadable</span>
+        {% else %}<span class="badge bg-warning text-dark">{{ s.get_status_display }}</span>{% endif %}
+      </td>
+      <td>{{ s.pending_count }}</td>
+      <td><a href="{% url 'omr:detail' s.pk %}">Open</a></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+{% endblock %}

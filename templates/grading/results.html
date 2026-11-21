@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h3 mb-0">Results · {{ exam.title }}</h1>
+  <div>
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'omr:list' exam.pk %}">Scanned sheets</a>
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'exams:detail' exam.pk %}">Back to exam</a>
+  </div>
+</div>
+{% if not rows %}
+  <p class="text-muted">No scanned sheets yet. Upload photos first.</p>
+{% else %}
+<form method="post" class="mb-3">
+  {% csrf_token %}
+  <input type="hidden" name="action" value="grade_all">
+  <button class="btn btn-primary btn-sm" type="submit">Grade all ready sheets</button>
+  {% if graded_count %}<a class="btn btn-outline-primary btn-sm" href="{% url 'grading:csv' exam.pk %}">Download CSV</a>{% endif %}
+</form>
+{% if graded_count %}<p class="text-muted">{{ graded_count }} graded · mean {{ mean_percent }}%</p>{% endif %}
+<table class="table table-sm bg-white align-middle">
+  <thead><tr><th>Version</th><th>Sheet</th><th>Student</th><th>Status</th><th>Score</th><th></th></tr></thead>
+  <tbody>
+  {% for r in rows %}
+    <tr>
+      <td>{{ r.scan.version.code|default:"-" }}</td>
+      <td>{{ r.scan.serial|default:"-" }}</td>
+      <td>{{ r.grade.student_label|default:"" }}</td>
+      <td>
+        {% if r.grade %}<span class="badge bg-success">Graded</span>
+        {% elif r.ready %}<span class="badge bg-info text-dark">Ready</span>
+        {% else %}<span class="badge bg-warning text-dark">Needs review</span>{% endif %}
+      </td>
+      <td>{% if r.grade %}{{ r.grade.score }} / {{ r.grade.max_score }} ({{ r.grade.percent }}%){% endif %}</td>
+      <td>
+        {% if r.grade %}<a href="{% url 'grading:result' r.grade.pk %}">Details</a>
+        {% else %}<a href="{% url 'omr:detail' r.scan.pk %}">Open scan</a>{% endif %}
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+{% endblock %}

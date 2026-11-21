@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 class="h3">Upload sheet photos · {{ exam.title }}</h1>
+<p class="text-muted">One photo per answer sheet, flat, all four corner markers and the QR code in frame.
+Use JPEG or PNG. You can select several photos at once.</p>
+<form method="post" enctype="multipart/form-data" class="card card-body" style="max-width: 560px">
+  {% csrf_token %}
+  <input class="form-control mb-3" type="file" name="photos" accept="image/*" capture="environment" multiple required>
+  <div>
+    <button class="btn btn-primary" type="submit">Upload and read</button>
+    <a class="btn btn-outline-secondary" href="{% url 'omr:list' exam.pk %}">Cancel</a>
+  </div>
+</form>
+{% endblock %}
