@@ -12,6 +12,7 @@ from .models import SheetScan
 
 MAX_FILES = 40
 MAX_BYTES = 15 * 1024 * 1024
+SAFE_IMAGE_TYPES = {"image/jpeg", "image/png"}
 
 
 def _int(value):
@@ -101,7 +102,9 @@ def scan_detail(request, pk):
 @login_required
 def scan_image(request, pk):
     scan = _own_scan(request, pk)
-    ctype = mimetypes.guess_type(scan.original_name)[0] or "application/octet-stream"
+    ctype = mimetypes.guess_type(scan.original_name)[0]
+    if ctype not in SAFE_IMAGE_TYPES:
+        ctype = "application/octet-stream"
     resp = FileResponse(scan.image.open("rb"), content_type=ctype)
     resp["Cache-Control"] = "private, no-store"
     resp["X-Content-Type-Options"] = "nosniff"

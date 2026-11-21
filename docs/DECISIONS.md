@@ -70,12 +70,20 @@ Each successful generation draws a new seed and stores it in `Exam.base_seed`, s
 ## D-015 Reprints continue serial numbers
 The answer-sheets PDF accepts `?start=N` so a reprint never reuses a sheet serial within a version. The "of N" total is shown only when numbering starts at 1.
 
-D-016: a selected row with an erasure-like patch (a bubble more than 0.03 lighter than empty) is sent to manual review. The threshold is calibrated on one digital sample only.
-D-017: the stale warning is not shown for finalized exams.
+## D-016 The OMR reader never guesses
+Faint, double-marked or erased items go to a person. A sheet is graded only when every item is resolved.
 
-D-018: core/omr_reader.py and core/omr_erasure.py are copies of the spike files, so Django never imports spike/. Debt: the spike will later become a thin wrapper.
-D-019: the upload is per exam. Reads are two-pass (QR first, then the version’s own layout). An unusable QR gives the manual version choice (D-002).
-D-020: the machine reading (status, detected) is never overwritten. Human decisions go in resolved, and final prefers them.
+## D-017 Each sheet is graded against its own version's key
+The QR payload carries version and sheet serial. Results are shown as percentages because versions can differ in maximum score.
+
+## D-018 Production settings are environment-driven
+Secrets and hosts come from environment variables. HTTPS redirect and HSTS are on by default. `DJANGO_SETTINGS_MODULE` stays unset locally so dev is the default.
+
+## D-019 Deleting a bank keeps its exams
+Exam.bank is cleared; exams keep their own question snapshots (see D-008).
+
+## D-020 Accuracy figures are digital/synthetic only
+No printed-paper measurement exists. Spot-check real sheets before relying on results.
 
 D-021: grading uses the scan’s own version key and the snapshot points, and blank scores 0. It refuses unresolved sheets.
 D-022: a grade is deleted when its scan is re-read or a resolution changes, so scores are never stale.
