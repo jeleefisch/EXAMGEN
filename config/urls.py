@@ -26,4 +26,6 @@ urlpatterns = [
     path('banks/', include('apps.banks.urls')),
     path("exams/", include("apps.exams.urls")),
     path("documents/", include("apps.documents.urls")),
+    path("scans/", include("apps.omr.urls")),
+    path("grading/", include("apps.grading.urls")),
 ]

@@ -6,4 +6,6 @@ media/
 .env
 .vscode/
 spike/photos/
+spike/out/media/
+
 spike/out/

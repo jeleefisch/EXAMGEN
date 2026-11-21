@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-2">
+  <h1 class="h3 mb-0">{{ scan.exam.title }} · {{ scan.version.code }} sheet {{ scan.serial|default:"-" }}</h1>
+  <a class="btn btn-outline-secondary btn-sm" href="{% url 'grading:results' scan.exam.pk %}">All results</a>
+</div>
+<p class="fs-5">Score: <strong>{{ grade.score }} / {{ grade.max_score }}</strong> ({{ grade.percent }}%)
+  <span class="text-muted fs-6">· {{ grade.correct_count }} correct · {{ grade.wrong_count }} wrong · {{ grade.blank_count }} blank</span></p>
+<form method="post" class="d-flex gap-2 mb-3" style="max-width: 480px">
+  {% csrf_token %}
+  <input class="form-control form-control-sm" name="student_label" maxlength="120"
+         value="{{ grade.student_label }}" placeholder="Student name or number (optional)">
+  <button class="btn btn-primary btn-sm" type="submit">Save</button>
+</form>
+<table class="table table-sm bg-white">
+  <thead><tr><th>Item</th><th>Answer</th><th>Key</th><th>Points</th></tr></thead>
+  <tbody>
+  {% for d in grade.details %}
+    <tr {% if not d.correct %}class="table-danger"{% endif %}>
+      <td>{{ d.item }}</td><td>{{ d.answer }}</td><td>{{ d.key }}</td><td>{{ d.points }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+<a href="{% url 'omr:detail' scan.pk %}">Open the scan</a>
+{% endblock %}

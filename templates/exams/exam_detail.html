@@ -62,7 +62,11 @@
 
 <h2 class="h5">Versions</h2>
 {% if finalized and versions %}
-<p><a class="btn btn-outline-dark btn-sm" href="{% url 'documents:key' exam.pk %}">Answer key PDF (all versions, faculty only)</a></p>
+<div class="d-flex flex-wrap gap-2 mb-3">
+  <a class="btn btn-outline-dark btn-sm" href="{% url 'documents:key' exam.pk %}">Answer key PDF (all versions, faculty only)</a>
+  <a class="btn btn-outline-primary btn-sm" href="{% url 'omr:list' exam.pk %}">Scanned sheets</a>
+  <a class="btn btn-outline-primary btn-sm" href="{% url 'grading:results' exam.pk %}">Results</a>
+</div>
 {% endif %}
 {% if versions %}
 <div class="list-group mb-4">

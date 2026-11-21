@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-2">
+  <h1 class="h3 mb-0">Scan: {{ scan.original_name }}</h1>
+  <a class="btn btn-outline-secondary btn-sm" href="{% url 'omr:list' scan.exam.pk %}">All scans</a>
+</div>
+<p class="text-muted">
+  Version: {{ scan.version.code|default:"unknown" }} · Sheet: {{ scan.serial|default:"unknown" }} ·
+  Status: {{ scan.get_status_display }}
+  {% if scan.is_ready %}<span class="badge bg-success">Ready for grading</span>{% endif %}
+</p>
+
+{% if scan.error %}<div class="alert alert-danger">{{ scan.error }}</div>{% endif %}
+{% for w in scan.warnings %}<div class="alert alert-warning py-2">{{ w }}</div>{% endfor %}
+
+{% if scan.status == "needs_version" or scan.status == "unreadable" %}
+<form method="post" class="card card-body mb-3" style="max-width: 560px">
+  {% csrf_token %}
+  <input type="hidden" name="action" value="version">
+  <p class="mb-2">{% if scan.status == "needs_version" %}The QR code could not be matched to a version of this exam.{% else %}Try again by choosing the version by hand.{% endif %}
+  Choose the version printed on the sheet.</p>
+  <select class="form-select mb-2" name="version" required>
+    <option value="">Version...</option>
+    {% for v in versions %}<option value="{{ v.pk }}">{{ v.code }}</option>{% endfor %}
+  </select>
+  <input class="form-control mb-2" type="number" name="serial" min="1" max="100000" placeholder="Sheet number (optional)">
+  <div><button class="btn btn-primary btn-sm" type="submit">Re-read with this version</button></div>
+</form>
+{% endif %}
+
+{% if rows %}
+<form method="post">
+  {% csrf_token %}
+  <input type="hidden" name="action" value="resolve">
+  <table class="table table-sm bg-white align-middle">
+    <thead><tr><th>Item</th><th>Read as</th><th>Status</th><th>Your decision</th></tr></thead>
+    <tbody>
+    {% for row in rows %}
+      {% with it=row.obj %}
+      <tr {% if it.needs_review %}class="table-warning"{% endif %}>
+        <td>{{ it.item }}</td>
+        <td>{{ it.detected }}</td>
+        <td>{{ it.status }}{% if it.resolved %} → <strong>{{ it.resolved }}</strong>{% endif %}</td>
+        <td>
+          {% if it.status == "ambiguous" or it.status == "multiple" %}
+          <select class="form-select form-select-sm" name="item_{{ it.item }}">
+            <option value="">{% if it.resolved %}{{ it.resolved }} (keep){% else %}Choose...{% endif %}</option>
+            {% for c in row.options %}<option value="{{ c }}">{% if c == "-" %}- (blank){% else %}{{ c }}{% endif %}</option>{% endfor %}
+          </select>
+          {% endif %}
+        </td>
+      </tr>
+      {% endwith %}
+    {% endfor %}
+    </tbody>
+  </table>
+  <button class="btn btn-primary" type="submit">Save review</button>
+</form>
+{% endif %}
+
+<h2 class="h5 mt-4">Photo</h2>
+<img src="{% url 'omr:image' scan.pk %}" class="img-fluid border" style="max-height: 520px" alt="Uploaded sheet photo">
+{% endblock %}
